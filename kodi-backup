@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+export BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes
+
+info() { printf "\n%s %s\n\n" "$( date )" "$*" >&2; }
+trap 'echo $( date ) Backup interrupted >&2; exit 2' INT TERM
+
+info "Starting backup"
+
+borg create              \
+    --verbose            \
+    --filter AME         \
+    --list               \
+    --stats              \
+    --show-rc            \
+    --compression lz4    \
+    --exclude-caches     \
+                         \
+    /home/kodi/.kodi.borg/::'{hostname}-{now}' \
+    /home/kodi/.kodi/    \
+
+backup_exit=$?
+
+info "Pruning repository"
+
+borg prune                 \
+    --list                 \
+    --prefix '{hostname}-' \
+    --show-rc              \
+    --keep-daily    7      \
+    --keep-weekly   4      \
+    --keep-monthly  6      \
+                           \
+    /home/kodi/.kodi.borg/
+
+prune_exit=$?
+
+global_exit=$(( backup_exit > prune_exit ? backup_exit : prune_exit ))
+
+if [ ${global_exit} -eq 0 ]; then
+    info "Backup and Prune finished successfully"
+elif [ ${global_exit} -eq 1 ]; then
+    info "Backup and/or Prune finished with warnings"
+else
+    info "Backup and/or Prune finished with errors"
+fi
+
+exit ${global_exit}

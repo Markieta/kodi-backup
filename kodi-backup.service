@@ -1,0 +1,5 @@
+[Unit]
+Description=kodi-backup daemon
+
+[Service]
+ExecStart=/usr/local/sbin/kodi-backup

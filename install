@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Install kodi-backup files to operational directories
+
+set -e
+
+if [ $(id -u) -ne 0 ]; then
+    echo "Root privileges are required for running $0."
+    exit 1
+fi
+
+MY_DIR=$(dirname $0)
+systemd='/etc/systemd/system/'
+unit='kodi-backup.service'
+timer='kodi-backup.timer'
+sbin='/usr/local/sbin/'
+script='kodi-backup'
+sbinscript="$sbin/$script"
+
+cp "$MY_DIR/$unit" "$systemd"
+cp "$MY_DIR/$timer" "$systemd"
+cp "$MY_DIR/$script" "$sbin"
+
+chmod u+x "$sbinscript"
+
+systemctl daemon-reload

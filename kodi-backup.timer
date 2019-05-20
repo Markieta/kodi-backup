@@ -1,0 +1,9 @@
+[Unit]
+Description=kodi-backup daemon timer
+
+[Timer]
+OnCalendar=*-*-* 05:00:00
+Unit=kodi-backup.service
+
+[Install]
+WantedBy=timers.target
